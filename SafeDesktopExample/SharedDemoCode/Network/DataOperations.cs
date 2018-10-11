@@ -9,16 +9,16 @@ namespace App.Network
 {
     public class MutableDataOperations
     {
-        private static Session _session { get; set; }
-        private static MDataInfo _mdinfo;
+        private Session _session { get; set; }
+        private MDataInfo _mdinfo;
         private const int EntriesToInsert = 5;
 
-        public static void InitilizeSession(Session session)
+        public MutableDataOperations(Session session)
         {
             _session = session;
         }
 
-        internal static async Task PerformMDataOperations()
+        internal async Task PerformMDataOperations()
         {
             await CreateMutableData();
             await AddEntries();
@@ -35,7 +35,7 @@ namespace App.Network
             await ReadEntries();
         }
 
-        private static async Task CreateMutableData()
+        private async Task CreateMutableData()
         {
             Console.WriteLine("\nCreating new mutable data");
             const ulong tagType = 15010;
@@ -53,7 +53,7 @@ namespace App.Network
             Console.WriteLine("Mutable data created succesfully\n");
         }
 
-        private static async Task AddEntries()
+        private async Task AddEntries()
         {
             Console.WriteLine("Adding entries");
             using (var entryActionsH = await _session.MDataEntryActions.NewAsync())
@@ -70,7 +70,7 @@ namespace App.Network
             }
         }
         
-        private static async Task ReadEntries()
+        private async Task ReadEntries()
         {
             using (var entriesHandle = await _session.MDataEntries.GetHandleAsync(_mdinfo))
             {
@@ -89,7 +89,7 @@ namespace App.Network
             }
         }
 
-        private static async Task UpdateEntry()
+        private async Task UpdateEntry()
         {
             var keys = await _session.MData.ListKeysAsync(_mdinfo);
             var keyToUpdate = keys[new Random().Next(keys.Count)];
@@ -102,7 +102,7 @@ namespace App.Network
             }
         }
 
-        private static async Task DeleteEntry()
+        private async Task DeleteEntry()
         {
             var keys = await _session.MData.ListKeysAsync(_mdinfo);
             var keyToDelete = keys[new Random().Next(keys.Count)];

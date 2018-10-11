@@ -27,7 +27,7 @@ namespace LiveNetworkExample
                 PipeComm.NamedPipeServerCreateServer();
 
                 // Request Authentication
-                await Authentication.RequestAuthentication();
+                await Authentication.NonMockAuthenticationWithBrowserAsync();
             }
             else
             {

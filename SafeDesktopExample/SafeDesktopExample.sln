@@ -9,8 +9,11 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedDemoCode", "SharedDem
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiveNetworkExample", "LiveNetworkExample\LiveNetworkExample.csproj", "{6A742A1B-B770-45DF-A4A4-CF75F053E579}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkExampleTests", "Tests\NetworkExampleTests\NetworkExampleTests.csproj", "{1175EE82-700B-43AC-90C7-13ED8374F3AE}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		SharedDemoCode\SharedDemoCode.projitems*{1175ee82-700b-43ac-90c7-13ed8374f3ae}*SharedItemsImports = 4
 		SharedDemoCode\SharedDemoCode.projitems*{6a742a1b-b770-45df-a4a4-cf75f053e579}*SharedItemsImports = 4
 		SharedDemoCode\SharedDemoCode.projitems*{744006c7-f5dc-4188-aa3f-28d1e3b54175}*SharedItemsImports = 13
 		SharedDemoCode\SharedDemoCode.projitems*{ec56e282-31dc-43cf-9af2-effc54c88cec}*SharedItemsImports = 4
@@ -38,6 +41,14 @@ Global
 		{6A742A1B-B770-45DF-A4A4-CF75F053E579}.Release|Any CPU.Build.0 = Release|x64
 		{6A742A1B-B770-45DF-A4A4-CF75F053E579}.Release|x64.ActiveCfg = Release|x64
 		{6A742A1B-B770-45DF-A4A4-CF75F053E579}.Release|x64.Build.0 = Release|x64
+		{1175EE82-700B-43AC-90C7-13ED8374F3AE}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{1175EE82-700B-43AC-90C7-13ED8374F3AE}.Debug|Any CPU.Build.0 = Debug|x64
+		{1175EE82-700B-43AC-90C7-13ED8374F3AE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1175EE82-700B-43AC-90C7-13ED8374F3AE}.Debug|x64.Build.0 = Debug|Any CPU
+		{1175EE82-700B-43AC-90C7-13ED8374F3AE}.Release|Any CPU.ActiveCfg = Release|x64
+		{1175EE82-700B-43AC-90C7-13ED8374F3AE}.Release|Any CPU.Build.0 = Release|x64
+		{1175EE82-700B-43AC-90C7-13ED8374F3AE}.Release|x64.ActiveCfg = Release|Any CPU
+		{1175EE82-700B-43AC-90C7-13ED8374F3AE}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
