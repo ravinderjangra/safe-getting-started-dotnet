@@ -52,6 +52,7 @@ namespace App.Network
             {
                 // Send request to mock safe-browser for authentication.
                 // Use a mock account credentials in safe-browser and authenticate using the same.
+                Console.WriteLine("Requesting authentication from mock Safe browser");
                 var encodedReq = await Helpers.GenerateEncodedAppRequestAsync();
                 var url = Helpers.UrlFormat(encodedReq.Item2, true);
                 System.Diagnostics.Process.Start(url);
@@ -67,9 +68,9 @@ namespace App.Network
         {
             try
             {
-                // Send request to non-mock safe-browser for authentication.
+                // Send request to safe-browser for authentication.
                 // Login in safe-browser to authenticate.
-                Console.WriteLine("Requesting authentication from Peruse");
+                Console.WriteLine("Requesting authentication from Safe browser");
                 var encodedReq = await Helpers.GenerateEncodedAppRequestAsync();
                 var url = Helpers.UrlFormat(encodedReq.Item2, true);
                 System.Diagnostics.Process.Start(url);
@@ -111,7 +112,7 @@ namespace App.Network
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Exception: " + ex.Message);;
+                Console.WriteLine("Exception: " + ex.Message); ;
             }
         }
     }

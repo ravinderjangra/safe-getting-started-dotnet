@@ -27,7 +27,7 @@ namespace MockNetworkExample
                     // Create a new pipe - it will return immediately and async wait for connections
                     PipeComm.NamedPipeServerCreateServer();
 
-                    Console.WriteLine("Press Y/y to use safe-mock-browser for authentication : ");
+                    Console.WriteLine("Press Y to use mock safe-browser for authentication : ");
                     var key = Console.ReadKey().KeyChar;
                     if (key == 'Y' || key == 'y')
                     {

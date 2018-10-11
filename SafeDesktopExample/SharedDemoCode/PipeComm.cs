@@ -5,6 +5,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using System.Threading;
 using App.Network;
 
 namespace App
@@ -15,6 +16,7 @@ namespace App
         private static readonly object _namedPiperServerThreadLock = new object();
         private static NamedPipeServerStream _namedPipeServerStream;
         private static NamedPipePayload _namedPipePayload;
+        private static SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
 
         /// <summary>
         /// Starts a new pipe server if one isn't already active.
@@ -62,28 +64,26 @@ namespace App
         /// The function called when a client connects to the named pipe. Note: This method is called on a non-UI thread.
         /// </summary>
         /// <param name="iAsyncResult"></param>
-        public static void NamedPipeServerConnectionCallback(IAsyncResult iAsyncResult)
+        public static async void NamedPipeServerConnectionCallback(IAsyncResult iAsyncResult)
         {
+            await semaphoreSlim.WaitAsync();
             try
             {
                 // End waiting for the connection
                 _namedPipeServerStream.EndWaitForConnection(iAsyncResult);
 
                 // Read data and prevent access to _namedPipePayload during threaded operations
-                lock (_namedPiperServerThreadLock)
+                // Read data from client
+                IFormatter f = new BinaryFormatter();
+                _namedPipePayload = (NamedPipePayload)(f.Deserialize(_namedPipeServerStream));
+
+                if (_namedPipePayload.SignalQuit)
                 {
-                    // Read data from client
-                    IFormatter f = new BinaryFormatter();
-                    _namedPipePayload = (NamedPipePayload)(f.Deserialize(_namedPipeServerStream));
-
-                    if (_namedPipePayload.SignalQuit)
-                    {
-                        return;
-                    }
-
-                    // Console.WriteLine("Got Authenticaiton Response.");
-                    Authentication.ProcessAuthenticationResponse(_namedPipePayload.Arguments);
+                    return;
                 }
+
+                // Console.WriteLine("Got Authenticaiton Response.");
+                await Authentication.ProcessAuthenticationResponse(_namedPipePayload.Arguments);
             }
             catch (ObjectDisposedException)
             {
@@ -100,6 +100,7 @@ namespace App
             {
                 // Close the original pipe (we will create a new one each time)
                 _namedPipeServerStream.Dispose();
+                semaphoreSlim.Release();
             }
 
             // Create a new pipe for next connection
