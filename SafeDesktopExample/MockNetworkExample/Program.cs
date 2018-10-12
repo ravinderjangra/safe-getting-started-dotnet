@@ -20,17 +20,18 @@ namespace MockNetworkExample
             {
                 if (IsApplicationFirstInstance())
                 {
-                    //args[0] is always the path to the application
-                    Helpers.RegisterAppProtocol(args[0]);
-                    //^the method posted before, that edits registry
-
-                    // Create a new pipe - it will return immediately and async wait for connections
-                    PipeComm.NamedPipeServerCreateServer();
-
                     Console.WriteLine("Press Y to use mock safe-browser for authentication : ");
                     var key = Console.ReadKey().KeyChar;
+
                     if (key == 'Y' || key == 'y')
                     {
+                        //args[0] is always the path to the application
+                        Helpers.RegisterAppProtocol(args[0]);
+                        //^the method posted before, that edits registry
+
+                        // Create a new pipe - it will return immediately and async wait for connections
+                        PipeComm.NamedPipeServerCreateServer();
+
                         // Request authentication from mock browser
                         await Authentication.MockAuthenticationWithBrowserAsync();
                     }
