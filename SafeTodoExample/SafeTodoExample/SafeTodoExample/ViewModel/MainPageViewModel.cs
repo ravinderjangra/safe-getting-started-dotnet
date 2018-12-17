@@ -64,8 +64,8 @@ namespace SafeTodoExample.ViewModel
                 using (Acr.UserDialogs.UserDialogs.Instance.Loading("Authenticating"))
                 {
                     await AppService.ProcessMockAuthentication();
+                    MessagingCenter.Send(this, MessengerConstants.NavigateToItemPage);
                 }
-                MessagingCenter.Send(this, MessengerConstants.NavigateToItemPage);
             }
             catch (Exception ex)
             {

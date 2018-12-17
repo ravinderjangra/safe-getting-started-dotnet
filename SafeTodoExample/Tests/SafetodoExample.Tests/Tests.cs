@@ -26,6 +26,8 @@ namespace SafetodoExample.Tests
 
                 await authViewModel.ConnectToMockAsync();
                 Assert.True(messageReceived);
+                MessagingCenter.Unsubscribe<MainPageViewModel>(this, MessengerConstants.NavigateToAuthPage);
+
                 authViewModel.AppService.Dispose();
             }
             catch (Exception ex)
@@ -49,6 +51,8 @@ namespace SafetodoExample.Tests
                     });
 
                 await authViewModel.ConnectToMockAsync();
+                MessagingCenter.Unsubscribe<MainPageViewModel>(this, MessengerConstants.NavigateToAuthPage);
+
                 Assert.True(messageReceived);
 
                 var todoItemsViewModel = new TodoItemsPageViewModel();
@@ -105,6 +109,7 @@ namespace SafetodoExample.Tests
                 Assert.AreEqual(1, todoItemsViewModel.ToDoItems.Count);
                 Assert.AreEqual(newDetails, todoItemsViewModel.ToDoItems[0].Detail);
 
+                MessagingCenter.Unsubscribe<AddItemViewModel>(this, MessengerConstants.RefreshItemList);
                 authViewModel.AppService.Dispose();
             }
             catch (Exception ex)
