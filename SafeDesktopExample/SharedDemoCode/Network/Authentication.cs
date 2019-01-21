@@ -25,7 +25,6 @@ namespace App.Network
                 var password = Helpers.GenerateRandomString(10);
                 var invitation = Helpers.GenerateRandomString(15);
                 var authenticator = await Authenticator.CreateAccountAsync(location, password, invitation);
-                authenticator = await Authenticator.LoginAsync(location, password);
 
                 // Authentication and Logging
                 var (_, reqMsg) = await Helpers.GenerateEncodedAppRequestAsync();
@@ -45,8 +44,9 @@ namespace App.Network
                 throw ex;
             }
         }
+#endif
 
-        public static async Task MockAuthenticationWithBrowserAsync()
+        public static async Task AuthenticationWithBrowserAsync()
         {
             try
             {
@@ -63,25 +63,6 @@ namespace App.Network
                 throw ex;
             }
         }
-#else
-        public static async Task NonMockAuthenticationWithBrowserAsync()
-        {
-            try
-            {
-                // Send request to safe-browser for authentication.
-                // Login in safe-browser to authenticate.
-                Console.WriteLine("Requesting authentication from Safe browser");
-                var encodedReq = await Helpers.GenerateEncodedAppRequestAsync();
-                var url = Helpers.UrlFormat(encodedReq.Item2, true);
-                System.Diagnostics.Process.Start(url);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Exception: " + ex.Message);
-                throw ex;
-            }
-        }
-#endif
 
         public static async Task ProcessAuthenticationResponse(string authResponse)
         {
@@ -99,7 +80,7 @@ namespace App.Network
                     {
                         // Initialise a new session
                         var session = await Session.AppRegisteredAsync(ConsoleAppConstants.AppId, ipcMsg.AuthGranted);
-                        MutableDataOperations.InitialiseSession(session);
+                        DataOperations.InitialiseSession(session);
                     }
                 }
                 else

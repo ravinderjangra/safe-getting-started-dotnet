@@ -7,7 +7,7 @@ using SafeApp.Utilities;
 
 namespace App.Network
 {
-    public class MutableDataOperations
+    public class DataOperations
     {
         private static Session _session;
 
@@ -42,7 +42,7 @@ namespace App.Network
                         await _session.MData.PutAsync(_mdinfo, permissionsH, NativeHandle.EmptyMDataEntries);
                     }
                 }
-                Console.WriteLine("Mutable data created succesfully");
+                Console.WriteLine("Mutable data created successfully");
             }
             catch (Exception ex)
             {

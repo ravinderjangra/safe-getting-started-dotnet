@@ -37,7 +37,7 @@ namespace App
             return await Session.EncodeAuthReqAsync(authReq);
         }
 
-        // Registering URL Protocol in System Registery using full path of the application
+        // Registering URL Protocol in System Registry using full path of the application
         public static void RegisterAppProtocol(string appPath)
         {
             Console.WriteLine("\nRegistering Apps URL Protocol in Registry");
