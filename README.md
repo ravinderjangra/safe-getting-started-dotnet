@@ -13,13 +13,13 @@ This repository contains .Net Framework and Xamarin.Forms (Android, iOS) example
 Demonstrates:
  - Usage of the [MaidSafe.SafeApp](https://www.nuget.org/packages/MaidSafe.SafeApp) NuGet package to build a desktop app for the SAFE Network
  - Modes of Authentication
-     - Mock authentication 
+     - Mock authentication using the mock Authenticator API
      - Mock authentication using the [mock-safe-browser](https://github.com/maidsafe/safe_browser/releases/latest)
      - Test net authentication using the [safe-browser](https://github.com/maidsafe/safe_browser/releases/latest)
  - Mutable Data
      - CRUD operations on mutable data
 
-### Pre-requisites
+### Prerequisites
 
 - Visual Studio Windows desktop development workload
 
@@ -32,9 +32,9 @@ Demonstrates:
 ### Features
 
 Demonstrates:
- - Usage of the [MaidSafe.SafeApp](https://www.nuget.org/packages/MaidSafe.SafeApp) NuGet package to build a SAFE android application
+ - Usage of the [MaidSafe.SafeApp](https://www.nuget.org/packages/MaidSafe.SafeApp) NuGet package to build a mobile (Android, iOS) application for the SAFE network
  - Modes of Authentication
-     - Mock authentication using test APIs
+     - Mock authentication using the mock Authenticator API
      - Authentication using the [SAFE Authenticator](https://github.com/maidsafe/safe-authenticator-mobile) 
  - Mock & non-mock versions
     - Developer can switch between mock and non mock library for testing and deployment
@@ -43,7 +43,7 @@ Demonstrates:
  - Usage of app's container
      - Store mutable data information in an app's default container. This can be used to retain and retrieve data used in the application
 
-### Pre-requisites
+### Prerequisites
 The [SAFE Authenticator mobile](https://github.com/maidsafe/safe-authenticator-mobile) application is required for authentication to the SAFE Network.
 
 On Visual Studio 2017, you will need the following SDKs and workloads installed:
