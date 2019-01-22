@@ -14,14 +14,14 @@ Demonstrates:
  - Usage of the [MaidSafe.SafeApp](https://www.nuget.org/packages/MaidSafe.SafeApp) NuGet package to build a desktop app for the SAFE Network
  - Modes of Authentication
      - Mock authentication 
-     - Mock authentication using the [mock-safe-browser](https://github.com/maidsafe/safe_browser/releases)
-     - Test net authentication using the [safe-browser](https://github.com/maidsafe/safe_browser/releases)
+     - Mock authentication using the [mock-safe-browser](https://github.com/maidsafe/safe_browser/releases/latest)
+     - Test net authentication using the [safe-browser](https://github.com/maidsafe/safe_browser/releases/latest)
  - Mutable Data
      - CRUD operations on mutable data
 
 ### Pre-requisites
 
-- Visual Studio Windows desktop development
+- Visual Studio Windows desktop development workload
 
 ### Supported Platforms
 
@@ -59,7 +59,7 @@ On Visual Studio 2017, you will need the following SDKs and workloads installed:
 
 ## Further Help
 
-Get your developer related questions clarified on the [SAFE Dev Forum](https://forum.safedev.org/). If you're looking to share any other ideas or thoughts on the SAFE Network you can reach out on [SAFE Network Forum](https://safenetforum.org/).
+Get your developer related questions clarified on the [SAFE Dev Forum](https://forum.safedev.org/). If you're looking to share any other ideas or thoughts on the SAFE Network you can reach out on the [SAFE Network Forum](https://safenetforum.org/).
 
 
 ## Contribution
