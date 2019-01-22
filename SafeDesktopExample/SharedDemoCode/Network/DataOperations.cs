@@ -31,7 +31,7 @@ namespace App.Network
             {
                 Console.WriteLine("\nCreating new mutable data");
 
-                // Create MDataInfo
+                // Create a random private mutable data
 
                 // Insert Permission Sets
 
@@ -64,7 +64,7 @@ namespace App.Network
             // Create an MDataEntry list to hold entries
             try
             {
-                // Fetch and decode entries
+                // Fetch and decrypt entries
 
                 return null;
             }
