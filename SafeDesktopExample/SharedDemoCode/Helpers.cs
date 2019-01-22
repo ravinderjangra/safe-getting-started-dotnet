@@ -31,7 +31,7 @@ namespace App
             {
                 AppContainer = true,
                 App = new AppExchangeInfo { Id = ConsoleAppConstants.AppId, Scope = string.Empty, Name = ConsoleAppConstants.AppName, Vendor = ConsoleAppConstants.Vendor },
-                Containers = new List<ContainerPermissions> { new ContainerPermissions { ContName = "_publicNames", Access = { Insert = true } } }
+                Containers = new List<ContainerPermissions>()
             };
 
             return await Session.EncodeAuthReqAsync(authReq);
