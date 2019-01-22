@@ -20,13 +20,13 @@ namespace App.Network
                 // We use this method while developing the app or working with tests.
                 // This way we don't have to authenticate using safe-browser.
 
-                // Generating random credentials
+                // Generating random mock account
                 var location = Helpers.GenerateRandomString(10);
                 var password = Helpers.GenerateRandomString(10);
                 var invitation = Helpers.GenerateRandomString(15);
                 var authenticator = await Authenticator.CreateAccountAsync(location, password, invitation);
 
-                // Authentication and Logging
+                // Authentication
                 var (_, reqMsg) = await Helpers.GenerateEncodedAppRequestAsync();
                 var ipcReq = await authenticator.DecodeIpcMessageAsync(reqMsg);
                 var authIpcReq = ipcReq as AuthIpcReq;
@@ -34,7 +34,7 @@ namespace App.Network
                 var ipcResponse = await Session.DecodeIpcMessageAsync(resMsg);
                 var authResponse = ipcResponse as AuthIpcMsg;
 
-                // Initialize a new session
+                // return a new session
                 var session = await Session.AppRegisteredAsync(ConsoleAppConstants.AppId, authResponse.AuthGranted);
                 return session;
             }
@@ -50,8 +50,7 @@ namespace App.Network
         {
             try
             {
-                // Send request to mock safe-browser for authentication.
-                // Use a mock account credentials in safe-browser and authenticate using the same.
+                // Generate and send auth request to safe-browser for authentication.
                 Console.WriteLine("Requesting authentication from mock Safe browser");
                 var encodedReq = await Helpers.GenerateEncodedAppRequestAsync();
                 var url = Helpers.UrlFormat(encodedReq.Item2, true);
@@ -68,6 +67,7 @@ namespace App.Network
         {
             try
             {
+                // Decode auth response and initialise a new session
                 var encodedRequest = Helpers.GetRequestData(authResponse);
                 var decodeResult = await Session.DecodeIpcMessageAsync(encodedRequest);
                 if (decodeResult.GetType() == typeof(AuthIpcMsg))

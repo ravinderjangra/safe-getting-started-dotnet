@@ -30,9 +30,12 @@ namespace App.Network
             try
             {
                 Console.WriteLine("\nCreating new mutable data");
+
+                // Create a random private mutable data
                 const ulong tagType = 15010;
                 _mdinfo = await _session.MDataInfoActions.RandomPrivateAsync(tagType);
 
+                // Insert Permission Sets
                 var mDataPermissionSet = new PermissionSet { Insert = true, ManagePermissions = true, Read = true, Update = true, Delete = true };
                 using (var permissionsH = await _session.MDataPermissions.NewAsync())
                 {
@@ -56,6 +59,7 @@ namespace App.Network
         {
             try
             {
+                // Add entry to mutable data
                 using (var entryActionsH = await _session.MDataEntryActions.NewAsync())
                 {
                     var encryptedKey = await _session.MDataInfoActions.EncryptEntryKeyAsync(_mdinfo, key.ToUtfBytes());
@@ -73,9 +77,11 @@ namespace App.Network
 
         internal async Task<List<MDataEntry>> GetEntries()
         {
+            // Create an MDataEntry list to hold entries
             List<MDataEntry> entries = new List<MDataEntry>();
             try
             {
+                // Fetch and decrypt entries
                 using (var entriesHandle = await _session.MDataEntries.GetHandleAsync(_mdinfo))
                 {
                     var encryptedEntries = await _session.MData.ListEntriesAsync(entriesHandle);
@@ -105,6 +111,7 @@ namespace App.Network
         {
             try
             {
+                // Update an existing mutable data entry
                 var keyToUpdate = await _session.MDataInfoActions.EncryptEntryKeyAsync(_mdinfo, key.ToUtfBytes());
                 var newValueToUpdate = await _session.MDataInfoActions.EncryptEntryValueAsync(_mdinfo, newValue.ToUtfBytes());
                 using (var entriesHandle = await _session.MDataEntryActions.NewAsync())
@@ -124,6 +131,7 @@ namespace App.Network
         {
             try
             {
+                // Delete an existing mutable data entry
                 var keyToDelete = await _session.MDataInfoActions.EncryptEntryKeyAsync(_mdinfo, key.ToUtfBytes());
                 using (var entriesHandle = await _session.MDataEntryActions.NewAsync())
                 {

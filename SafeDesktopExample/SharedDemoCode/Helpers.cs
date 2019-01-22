@@ -27,6 +27,8 @@ namespace App
         public static async Task<(uint, string)> GenerateEncodedAppRequestAsync()
         {
             Console.WriteLine("\nGenerating application authentication request");
+
+            // Create an AuthReq object
             var authReq = new AuthReq
             {
                 AppContainer = true,
@@ -34,6 +36,7 @@ namespace App
                 Containers = new List<ContainerPermissions>()
             };
 
+            // Return encoded AuthReq
             return await Session.EncodeAuthReqAsync(authReq);
         }
 
