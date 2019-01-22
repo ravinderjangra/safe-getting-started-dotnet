@@ -9,6 +9,7 @@ using SharedDemoCode;
 
 namespace App
 {
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
     public static class Helpers
     {
         // Add safe-auth:// in encoded auth request
@@ -27,17 +28,13 @@ namespace App
         public static async Task<(uint, string)> GenerateEncodedAppRequestAsync()
         {
             Console.WriteLine("\nGenerating application authentication request");
-            var authReq = new AuthReq
-            {
-                AppContainer = true,
-                App = new AppExchangeInfo { Id = ConsoleAppConstants.AppId, Scope = string.Empty, Name = ConsoleAppConstants.AppName, Vendor = ConsoleAppConstants.Vendor },
-                Containers = new List<ContainerPermissions> { new ContainerPermissions { ContName = "_publicNames", Access = { Insert = true } } }
-            };
 
-            return await Session.EncodeAuthReqAsync(authReq);
+            // Generate an AuthReq
+
+            return (0, null);
         }
 
-        // Registering URL Protocol in System Registery using full path of the application
+        // Registering URL Protocol in System Registry using full path of the application
         public static void RegisterAppProtocol(string appPath)
         {
             Console.WriteLine("\nRegistering Apps URL Protocol in Registry");
@@ -80,5 +77,6 @@ namespace App
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             return new string(Enumerable.Repeat(chars, length).Select(s => s[random.Next(s.Length)]).ToArray());
         }
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     }
 }
