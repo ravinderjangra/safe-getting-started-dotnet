@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using SafeApp;
 using SafeApp.Utilities;
@@ -89,8 +88,8 @@ namespace App.Network
                     {
                         if (entry.Value.Content.Count != 0)
                         {
-                            var decryptedKey = await _session.MDataInfoActions.DecryptAsync(_mdinfo, entry.Key.Key.ToList());
-                            var decryptedValue = await _session.MDataInfoActions.DecryptAsync(_mdinfo, entry.Value.Content.ToList());
+                            var decryptedKey = await _session.MDataInfoActions.DecryptAsync(_mdinfo, entry.Key.Key);
+                            var decryptedValue = await _session.MDataInfoActions.DecryptAsync(_mdinfo, entry.Value.Content);
                             entries.Add(new MDataEntry()
                             {
                                 Key = new MDataKey() { Key = decryptedKey },

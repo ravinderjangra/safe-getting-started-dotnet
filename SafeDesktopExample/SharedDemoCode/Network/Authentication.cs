@@ -51,7 +51,7 @@ namespace App.Network
             try
             {
                 // Generate and send auth request to safe-browser for authentication.
-                Console.WriteLine("Requesting authentication from mock Safe browser");
+                Console.WriteLine("Requesting authentication from Safe browser");
                 var encodedReq = await Helpers.GenerateEncodedAppRequestAsync();
                 var url = Helpers.UrlFormat(encodedReq.Item2, true);
                 System.Diagnostics.Process.Start(url);
