@@ -64,7 +64,7 @@ namespace SafeTodoExample.ViewModel
             IsBusy = true;
             try
             {
-                var todoItem = await AppService.GetItemAsync();
+                var todoItem = await AppService.GetItemsAsync();
                 ToDoItems = new ObservableCollection<TodoItem>(todoItem.OrderByDescending(i => i.IsCompleted).Reverse());
             }
             catch (Exception ex)

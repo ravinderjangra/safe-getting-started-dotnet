@@ -57,15 +57,17 @@ namespace SafeTodoExample.ViewModel
         {
             try
             {
-                DialogHelper.ShowToast(AuthInProgressMessage, DialogType.Information);
+                using (Acr.UserDialogs.UserDialogs.Instance.Loading("Authenticating"))
+                {
 #if SAFE_APP_MOCK
-                // Create mock account and test app
-                await AppService.ProcessMockAuthentication();
-                MessagingCenter.Send(this, MessengerConstants.NavigateToItemPage);
+                    // Create mock account and test app
+                    await AppService.ProcessMockAuthentication();
+                    MessagingCenter.Send(this, MessengerConstants.NavigateToItemPage);
 #else
-                // Sending AuthReq to the authenticator
-                await AppService.ProcessNonMockAuthentication();
+                    // Sending AuthReq to the authenticator
+                    await AppService.ProcessNonMockAuthentication();
 #endif
+                }
             }
             catch (Exception ex)
             {

@@ -22,22 +22,6 @@ namespace SafeTodoExample.iOS
             return base.FinishedLaunching(app, options);
         }
 
-        public override bool OpenUrl(UIApplication app, NSUrl url, NSDictionary options)
-        {
-            Device.BeginInvokeOnMainThread(
-              async () =>
-              {
-                  try
-                  {
-                      await AppService.HandleUrlActivationAsync(url.ToString());
-                      Debug.WriteLine("IPC Msg Handling Completed");
-                  }
-                  catch (Exception ex)
-                  {
-                      Debug.WriteLine($"Error: {ex.Message}");
-                  }
-              });
-            return true;
-        }
+        // Override OpenUrl method
     }
 }
