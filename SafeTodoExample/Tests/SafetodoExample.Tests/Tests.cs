@@ -15,7 +15,7 @@ namespace SafetodoExample.Tests
             try
             {
                 var authViewModel = new MainPageViewModel();
-                await authViewModel.ConnectToMockAsync();
+                await authViewModel.ConnectToNetworkAsync();
                 Assert.True(authViewModel.AppService.IsSessionAvailable);
                 authViewModel.AppService.Dispose();
             }
@@ -31,7 +31,7 @@ namespace SafetodoExample.Tests
             try
             {
                 var authViewModel = new MainPageViewModel();
-                await authViewModel.ConnectToMockAsync();
+                await authViewModel.ConnectToNetworkAsync();
                 Assert.True(authViewModel.AppService.IsSessionAvailable);
 
                 var todoItemsViewModel = new TodoItemsPageViewModel();

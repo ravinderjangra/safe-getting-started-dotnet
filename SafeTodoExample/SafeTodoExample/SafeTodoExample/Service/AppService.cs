@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using SafeApp;
 using SafeApp.Utilities;
@@ -19,16 +18,12 @@ namespace SafeTodoExample.Service
 {
     public class AppService : ObservableObject, IDisposable
     {
-        public const string AppId = "net.maidsafe.examples.todo";
-        public const string AppName = "Safe Todo";
-        private string mdByteList = "MySafeTodo";
+        private const string AppContainerListKey = "MySafeTodo";
         public const string AuthDeniedMessage = "Failed to receive Authentication.";
-        private static bool _newMdInfoFlag;
         private Session _session;
-        private bool _mDataAvailable;
         private MDataInfo _mDataInfo;
 
-        public bool IsSessionAvailable => _session != null ? true : false;
+        public bool IsSessionAvailable => _session != null;
 
         public AppService()
         {
@@ -52,8 +47,6 @@ namespace SafeTodoExample.Service
             _session?.Dispose();
             _session = null;
             _mDataInfo.Name = null;
-            _newMdInfoFlag = false;
-            _mDataAvailable = false;
         }
 
         private void OnSessionDisconnected(object obj, EventArgs e)
@@ -70,15 +63,33 @@ namespace SafeTodoExample.Service
               });
         }
 
+        public async Task<(uint, string)> GenerateEncodedAuthReqAsync()
+        {
+            var authReq = new AuthReq
+            {
+                AppContainer = true,
+                App = new AppExchangeInfo
+                {
+                    Id = Constants.AppId,
+                    Scope = string.Empty,
+                    Name = Constants.AppName,
+                    Vendor = Constants.Vendor
+                },
+                Containers = new List<ContainerPermissions>()
+            };
+            return await Session.EncodeAuthReqAsync(authReq);
+        }
+
         #region MutableData Operation
 
-        private async Task GetMdInfoAsync()
+        public async Task GetMdInfoAsync()
         {
             try
             {
-                var appContainerMDataInfo = await _session.AccessContainer.GetMDataInfoAsync("apps/" + AppId);
-                var encrypedAppKey = await _session.MDataInfoActions.EncryptEntryKeyAsync(appContainerMDataInfo, mdByteList.ToUtfBytes());
-                (List<byte>, ulong) encryptedValue = await _session.MData.GetValueAsync(appContainerMDataInfo, encrypedAppKey);
+                // Retrieve MDataInfo from App container and deserialise
+                var appContainerMDataInfo = await _session.AccessContainer.GetMDataInfoAsync("apps/" + Constants.AppId);
+                var encryptedAppKey = await _session.MDataInfoActions.EncryptEntryKeyAsync(appContainerMDataInfo, AppContainerListKey.ToUtfBytes());
+                var encryptedValue = await _session.MData.GetValueAsync(appContainerMDataInfo, encryptedAppKey);
                 if (encryptedValue.Item1 != null)
                 {
                     var plainValue = await _session.MDataInfoActions.DecryptAsync(appContainerMDataInfo, encryptedValue.Item1);
@@ -88,122 +99,121 @@ namespace SafeTodoExample.Service
             catch (FfiException ex)
             {
                 Debug.WriteLine("Error : " + ex.Message);
-                const ulong tagType = 16000;
-                _mDataInfo = await _session.MDataInfoActions.RandomPrivateAsync(tagType);
-                _newMdInfoFlag = true;
+                await CreateMutableData();
+                await StoreMdInfoAsync();
             }
             catch (Exception ex)
             {
                 Debug.WriteLine("Error : " + ex.Message);
-                throw ex;
+                throw;
             }
-            _mDataAvailable = true;
         }
 
         public async Task StoreMdInfoAsync()
         {
             try
             {
-                if (_newMdInfoFlag)
+                // Serialise and store MDataInfo in App container
+                var serialisedMDataInfo = await _session.MDataInfoActions.SerialiseAsync(_mDataInfo);
+                var appContainerMDataInfo = await _session.AccessContainer.GetMDataInfoAsync("apps/" + Constants.AppId);
+                var encryptedAppKey = await _session.MDataInfoActions.EncryptEntryKeyAsync(appContainerMDataInfo, AppContainerListKey.ToUtfBytes());
+                var encryptedMDataInfo = await _session.MDataInfoActions.EncryptEntryValueAsync(appContainerMDataInfo, serialisedMDataInfo);
+                using (var appContEntActH = await _session.MDataEntryActions.NewAsync())
                 {
-                    var serializedMDataInfo = await _session.MDataInfoActions.SerialiseAsync(_mDataInfo);
-                    var appContainerMDataInfo = await _session.AccessContainer.GetMDataInfoAsync("apps/" + AppId);
-                    var encrypedAppKey = await _session.MDataInfoActions.EncryptEntryKeyAsync(appContainerMDataInfo, mdByteList.ToUtfBytes());
-                    var encryptedMDataInfo = await _session.MDataInfoActions.EncryptEntryValueAsync(appContainerMDataInfo, serializedMDataInfo);
-                    using (var appContEntActH = await _session.MDataEntryActions.NewAsync())
-                    {
-                        await _session.MDataEntryActions.InsertAsync(appContEntActH, encrypedAppKey, encryptedMDataInfo);
-                        await _session.MData.MutateEntriesAsync(appContainerMDataInfo, appContEntActH);
-                    }
+                    await _session.MDataEntryActions.InsertAsync(appContEntActH, encryptedAppKey, encryptedMDataInfo);
+                    await _session.MData.MutateEntriesAsync(appContainerMDataInfo, appContEntActH);
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine("Error : " + ex.Message);
-                throw ex;
+                throw;
             }
-            _newMdInfoFlag = false;
         }
 
-        public async Task<List<TodoItem>> GetItemAsync()
+        private async Task CreateMutableData()
         {
-            List<TodoItem> messages = new List<TodoItem>();
-            try
-            {
-                if (!_mDataAvailable)
-                {
-                    await GetMdInfoAsync();
-                }
+            // Create a new random private mutable data
+            const ulong tagType = 16000;
+            _mDataInfo = await _session.MDataInfoActions.RandomPrivateAsync(tagType);
 
-                if (!_newMdInfoFlag)
+            var mDataPermissionSet = new PermissionSet
+            {
+                Insert = true,
+                ManagePermissions = true,
+                Read = true,
+                Update = true,
+                Delete = true
+            };
+
+            // Insert permission set
+            using (var permissionsH = await _session.MDataPermissions.NewAsync())
+            {
+                using (var appSignKeyH = await _session.Crypto.AppPubSignKeyAsync())
                 {
-                    using (var entriesHandle = await _session.MDataEntries.GetHandleAsync(_mDataInfo))
-                    {
-                        var encryptedEntries = await _session.MData.ListEntriesAsync(entriesHandle);
-                        foreach (var entry in encryptedEntries)
-                        {
-                            if (entry.Value.Content.Count > 0)
-                            {
-                                var decryptedKey = await _session.MDataInfoActions.DecryptAsync(_mDataInfo, entry.Key.Key.ToList());
-                                var decryptedValue = await _session.MDataInfoActions.DecryptAsync(_mDataInfo, entry.Value.Content.ToList());
-                                var deserializedValue = decryptedValue.Deserialize();
-                                messages.Add(deserializedValue as TodoItem);
-                            }
-                        }
-                    }
+                    await _session.MDataPermissions.InsertAsync(permissionsH, appSignKeyH, mDataPermissionSet);
+                    await _session.MData.PutAsync(_mDataInfo, permissionsH, NativeHandle.EmptyMDataEntries);
                 }
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("Error : " + ex.Message);
-                throw ex;
-            }
-            return messages;
         }
 
         public async Task AddItemAsync(TodoItem todoItem)
         {
             try
             {
-                if (_newMdInfoFlag)
+                // Add entries to mutable data
+                using (var entriesHandle = await _session.MDataEntryActions.NewAsync())
                 {
-                    using (NativeHandle entriesHandle = await _session.MDataEntries.NewAsync())
-                    {
-                        var mDataPermissionSet = new PermissionSet { Insert = true, ManagePermissions = true, Read = true, Update = true, Delete = true };
-                        using (NativeHandle permissionsH = await _session.MDataPermissions.NewAsync())
-                        using (NativeHandle appSignKeyH = await _session.Crypto.AppPubSignKeyAsync())
-                        {
-                            await _session.MDataPermissions.InsertAsync(permissionsH, appSignKeyH, mDataPermissionSet);
-                            var encryptedKey = await _session.MDataInfoActions.EncryptEntryKeyAsync(_mDataInfo, todoItem.Title.ToUtfBytes());
-                            var encryptedValue = await _session.MDataInfoActions.EncryptEntryValueAsync(_mDataInfo, todoItem.Serialize());
-                            await _session.MDataEntries.InsertAsync(entriesHandle, encryptedKey, encryptedValue);
-                            await _session.MData.PutAsync(_mDataInfo, permissionsH, entriesHandle);
-                        }
-                        await StoreMdInfoAsync();
-                    }
+                    var encryptedKey = await _session.MDataInfoActions.EncryptEntryKeyAsync(_mDataInfo, todoItem.Title.ToUtfBytes());
+                    var encryptedValue = await _session.MDataInfoActions.EncryptEntryValueAsync(_mDataInfo, todoItem.Serialize());
+                    await _session.MDataEntryActions.InsertAsync(entriesHandle, encryptedKey, encryptedValue);
+                    await _session.MData.MutateEntriesAsync(_mDataInfo, entriesHandle);
                 }
-                else
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Error : " + ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<List<TodoItem>> GetItemAsync()
+        {
+            // Create a list to hold TodoItems fetched from the network
+            var todoItems = new List<TodoItem>();
+            try
+            {
+                // Retrieve the mutable data entries from the network and decrypt
+                using (var entriesHandle = await _session.MDataEntries.GetHandleAsync(_mDataInfo))
                 {
-                    using (NativeHandle entriesHandle = await _session.MDataEntryActions.NewAsync())
+                    var encryptedEntries = await _session.MData.ListEntriesAsync(entriesHandle);
+                    foreach (var entry in encryptedEntries)
                     {
-                        var encryptedKey = await _session.MDataInfoActions.EncryptEntryKeyAsync(_mDataInfo, todoItem.Title.ToUtfBytes());
-                        var encryptedValue = await _session.MDataInfoActions.EncryptEntryValueAsync(_mDataInfo, todoItem.Serialize());
-                        await _session.MDataEntryActions.InsertAsync(entriesHandle, encryptedKey, encryptedValue);
-                        await _session.MData.MutateEntriesAsync(_mDataInfo, entriesHandle);
+                        if (entry.Value.Content.Count <= 0)
+                        {
+                            continue;
+                        }
+
+                        var decryptedKey = await _session.MDataInfoActions.DecryptAsync(_mDataInfo, entry.Key.Key);
+                        var decryptedValue = await _session.MDataInfoActions.DecryptAsync(_mDataInfo, entry.Value.Content);
+                        var deserializedValue = decryptedValue.Deserialize();
+                        todoItems.Add(deserializedValue as TodoItem);
                     }
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine("Error : " + ex.Message);
-                throw ex;
+                throw;
             }
+            return todoItems;
         }
 
         public async Task UpdateItemAsync(TodoItem todoItem)
         {
             try
             {
+                // Update mutable data entry
                 using (var entriesHandle = await _session.MDataEntryActions.NewAsync())
                 {
                     var keyToUpdate = await _session.MDataInfoActions.EncryptEntryKeyAsync(_mDataInfo, todoItem.Title.ToUtfBytes());
@@ -216,7 +226,7 @@ namespace SafeTodoExample.Service
             catch (Exception ex)
             {
                 Debug.WriteLine("Error : " + ex.Message);
-                throw ex;
+                throw;
             }
         }
 
@@ -224,6 +234,7 @@ namespace SafeTodoExample.Service
         {
             try
             {
+                // Delete mutable data entry
                 using (var entriesHandle = await _session.MDataEntryActions.NewAsync())
                 {
                     var keyToDelete = await _session.MDataInfoActions.EncryptEntryKeyAsync(_mDataInfo, todoItem.Title.ToUtfBytes());
@@ -235,7 +246,7 @@ namespace SafeTodoExample.Service
             catch (Exception ex)
             {
                 Debug.WriteLine("Error : " + ex.Message);
-                throw ex;
+                throw;
             }
         }
 
@@ -243,49 +254,34 @@ namespace SafeTodoExample.Service
 
         #region Test Network Authentication
 
-        public async Task<string> GenerateAppRequestAsync()
+        public async Task ProcessNonMockAuthentication()
         {
-            AuthReq authReq = new AuthReq
-            {
-                AppContainer = true,
-                App = new AppExchangeInfo { Id = AppId, Scope = string.Empty, Name = "SAFE Todo App", Vendor = "MaidSafe.net Ltd" },
-                Containers = new List<ContainerPermissions>
-                {
-                    new ContainerPermissions
-                    {
-                        ContName = "_publicNames",
-                        Access = { Insert = true, Update = true, Delete = true }
-                    }
-                }
-            };
-
-            (uint, string) encodedReq = await Session.EncodeAuthReqAsync(authReq);
-            string formattedReq = UrlFormat.Format(AppId, encodedReq.Item2, true);
-            Debug.WriteLine($"Encoded Req: {formattedReq}");
-            return formattedReq;
+            var encodedAuthReq = await GenerateEncodedAuthReqAsync();
+            var url = UrlFormat.Format(Constants.AppId, encodedAuthReq.Item2, true);
+            Device.BeginInvokeOnMainThread(() => { Device.OpenUri(new Uri(url)); });
         }
 
         public async Task HandleUrlActivationAsync(string url)
         {
             try
             {
-                string encodedRequest = UrlFormat.GetRequestData(url);
-                IpcMsg decodeResult = await Session.DecodeIpcMessageAsync(encodedRequest);
+                // Decode auth response and Initialise a new session
+                var encodedRequest = UrlFormat.GetRequestData(url);
+                var decodeResult = await Session.DecodeIpcMessageAsync(encodedRequest);
                 if (decodeResult.GetType() == typeof(AuthIpcMsg))
                 {
-                    Debug.WriteLine("Received Auth Granted from Authenticator");
-                    AuthIpcMsg ipcMsg = decodeResult as AuthIpcMsg;
+                    var ipcMsg = decodeResult as AuthIpcMsg;
 
                     if (ipcMsg != null)
                     {
-                        _session = await Session.AppRegisteredAsync(AppId, ipcMsg.AuthGranted);
+                        _session = await Session.AppRegisteredAsync(Constants.AppId, ipcMsg.AuthGranted);
                         DialogHelper.ShowToast("Auth Granted", DialogType.Success);
                         MessagingCenter.Send(this, MessengerConstants.NavigateToItemPage);
                     }
                 }
                 else
                 {
-                    Debug.WriteLine("Decoded Req is not Auth Granted");
+                    Debug.WriteLine("Auth Req is not Auth Granted");
                 }
             }
             catch (Exception ex)
@@ -301,53 +297,38 @@ namespace SafeTodoExample.Service
 #if SAFE_APP_MOCK
         private Authenticator _authenticator;
 
-        private async Task CreateAndLoginAccountAsync()
+        private async Task CreateAccountAsync()
         {
-            string location = Misc.GetRandomString(10);
-            string password = Misc.GetRandomString(10);
-            string invitation = Misc.GetRandomString(15);
-            Debug.WriteLine($"CreateAccountAsync: {location} - {password} - {invitation.Substring(0, 5)}");
-            _authenticator = await Authenticator.CreateAccountAsync(location, password, invitation);
-            Debug.WriteLine("Account Created Successfully");
-            await LoginAsync(location, password);
-        }
-
-        private async Task LoginAsync(string location, string password)
-        {
-            Debug.WriteLine($"LoginAsync: {location} - {password}");
-            _authenticator = await Authenticator.LoginAsync(location, password);
-            Debug.WriteLine("Log-in Successfully");
-        }
-
-        private async Task CreateDemoTodoApp()
-        {
-            AuthReq authReq = new AuthReq
+            try
             {
-                AppContainer = true,
-                App = new AppExchangeInfo { Id = AppId, Scope = string.Empty, Name = AppName, Vendor = "MaidSafe.net Ltd" },
-                Containers = new List<ContainerPermissions> { new ContainerPermissions { ContName = "_publicNames", Access = { Insert = true, Update = true, Delete = true } } }
-            };
-
-            Debug.WriteLine($"Create Test App: {AppName} - {AppId}");
-            _session = await CreateTestAppAsync(authReq);
-            Debug.WriteLine($"App Created Successfully");
+                // Create a mock account
+                var location = Misc.GetRandomString(10);
+                var password = Misc.GetRandomString(10);
+                var invitation = Misc.GetRandomString(15);
+                _authenticator = await Authenticator.CreateAccountAsync(location, password, invitation);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
         }
 
-        private async Task<Session> CreateTestAppAsync(AuthReq authReq)
+        private async Task<Session> CreateTestAppAsync()
         {
-            (uint _, string reqMsg) = await Session.EncodeAuthReqAsync(authReq);
-            IpcReq ipcReq = await _authenticator.DecodeIpcMessageAsync(reqMsg);
-            AuthIpcReq authIpcReq = ipcReq as AuthIpcReq;
-            string resMsg = await _authenticator.EncodeAuthRespAsync(authIpcReq, true);
-            IpcMsg ipcResponse = await Session.DecodeIpcMessageAsync(resMsg);
-            AuthIpcMsg authResponse = ipcResponse as AuthIpcMsg;
-            return await Session.AppRegisteredAsync(authReq.App.Id, authResponse.AuthGranted);
+            // Authenticate using mock authentication API
+            var (_, reqMsg) = await GenerateEncodedAuthReqAsync();
+            var ipcReq = await _authenticator.DecodeIpcMessageAsync(reqMsg);
+            var authIpcReq = ipcReq as AuthIpcReq;
+            var resMsg = await _authenticator.EncodeAuthRespAsync(authIpcReq, true);
+            var ipcResponse = await Session.DecodeIpcMessageAsync(resMsg);
+            var authResponse = ipcResponse as AuthIpcMsg;
+            return await Session.AppRegisteredAsync(Constants.AppId, authResponse.AuthGranted);
         }
 
         public async Task ProcessMockAuthentication()
         {
-            await CreateAndLoginAccountAsync();
-            await CreateDemoTodoApp();
+            await CreateAccountAsync();
+            _session = await CreateTestAppAsync();
         }
 
         public async Task LogoutAsync()
