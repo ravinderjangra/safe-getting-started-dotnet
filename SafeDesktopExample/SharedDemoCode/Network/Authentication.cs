@@ -20,14 +20,13 @@ namespace App.Network
                 // We use this method while developing the app or working with tests.
                 // This way we don't have to authenticate using safe-browser.
 
-                // Generating random credentials
+                // Generating random mock account
                 var location = Helpers.GenerateRandomString(10);
                 var password = Helpers.GenerateRandomString(10);
                 var invitation = Helpers.GenerateRandomString(15);
                 var authenticator = await Authenticator.CreateAccountAsync(location, password, invitation);
-                authenticator = await Authenticator.LoginAsync(location, password);
 
-                // Authentication and Logging
+                // Authentication
                 var (_, reqMsg) = await Helpers.GenerateEncodedAppRequestAsync();
                 var ipcReq = await authenticator.DecodeIpcMessageAsync(reqMsg);
                 var authIpcReq = ipcReq as AuthIpcReq;
@@ -35,7 +34,7 @@ namespace App.Network
                 var ipcResponse = await Session.DecodeIpcMessageAsync(resMsg);
                 var authResponse = ipcResponse as AuthIpcMsg;
 
-                // Initialize a new session
+                // return a new session
                 var session = await Session.AppRegisteredAsync(ConsoleAppConstants.AppId, authResponse.AuthGranted);
                 return session;
             }
@@ -45,31 +44,13 @@ namespace App.Network
                 throw ex;
             }
         }
+#endif
 
-        public static async Task MockAuthenticationWithBrowserAsync()
+        public static async Task AuthenticationWithBrowserAsync()
         {
             try
             {
-                // Send request to mock safe-browser for authentication.
-                // Use a mock account credentials in safe-browser and authenticate using the same.
-                Console.WriteLine("Requesting authentication from mock Safe browser");
-                var encodedReq = await Helpers.GenerateEncodedAppRequestAsync();
-                var url = Helpers.UrlFormat(encodedReq.Item2, true);
-                System.Diagnostics.Process.Start(url);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Exception: " + ex.Message);
-                throw ex;
-            }
-        }
-#else
-        public static async Task NonMockAuthenticationWithBrowserAsync()
-        {
-            try
-            {
-                // Send request to safe-browser for authentication.
-                // Login in safe-browser to authenticate.
+                // Generate and send auth request to safe-browser for authentication.
                 Console.WriteLine("Requesting authentication from Safe browser");
                 var encodedReq = await Helpers.GenerateEncodedAppRequestAsync();
                 var url = Helpers.UrlFormat(encodedReq.Item2, true);
@@ -81,12 +62,12 @@ namespace App.Network
                 throw ex;
             }
         }
-#endif
 
         public static async Task ProcessAuthenticationResponse(string authResponse)
         {
             try
             {
+                // Decode auth response and initialise a new session
                 var encodedRequest = Helpers.GetRequestData(authResponse);
                 var decodeResult = await Session.DecodeIpcMessageAsync(encodedRequest);
                 if (decodeResult.GetType() == typeof(AuthIpcMsg))
@@ -99,7 +80,7 @@ namespace App.Network
                     {
                         // Initialise a new session
                         var session = await Session.AppRegisteredAsync(ConsoleAppConstants.AppId, ipcMsg.AuthGranted);
-                        MutableDataOperations.InitialiseSession(session);
+                        DataOperations.InitialiseSession(session);
                     }
                 }
                 else

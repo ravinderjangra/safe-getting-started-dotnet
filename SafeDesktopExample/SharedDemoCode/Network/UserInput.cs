@@ -7,11 +7,11 @@ namespace SharedDemoCode.Network
 {
     public class UserInput
     {
-        private MutableDataOperations _mdOperations;
+        private DataOperations _mdOperations;
 
         public UserInput()
         {
-            _mdOperations = new MutableDataOperations();
+            _mdOperations = new DataOperations();
         }
 
         public async Task ShowUserOptions()

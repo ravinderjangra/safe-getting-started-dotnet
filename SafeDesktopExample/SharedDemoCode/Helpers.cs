@@ -27,17 +27,20 @@ namespace App
         public static async Task<(uint, string)> GenerateEncodedAppRequestAsync()
         {
             Console.WriteLine("\nGenerating application authentication request");
+
+            // Create an AuthReq object
             var authReq = new AuthReq
             {
                 AppContainer = true,
                 App = new AppExchangeInfo { Id = ConsoleAppConstants.AppId, Scope = string.Empty, Name = ConsoleAppConstants.AppName, Vendor = ConsoleAppConstants.Vendor },
-                Containers = new List<ContainerPermissions> { new ContainerPermissions { ContName = "_publicNames", Access = { Insert = true } } }
+                Containers = new List<ContainerPermissions>()
             };
 
+            // Return encoded AuthReq
             return await Session.EncodeAuthReqAsync(authReq);
         }
 
-        // Registering URL Protocol in System Registery using full path of the application
+        // Registering URL Protocol in System Registry using full path of the application
         public static void RegisterAppProtocol(string appPath)
         {
             Console.WriteLine("\nRegistering Apps URL Protocol in Registry");

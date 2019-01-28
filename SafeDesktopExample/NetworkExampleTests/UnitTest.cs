@@ -33,9 +33,9 @@ namespace NetworkExampleTests
                 var session = await Authentication.MockAuthenticationAsync();
                 Assert.IsNotNull(session);
 
-                MutableDataOperations.InitialiseSession(session);
+                DataOperations.InitialiseSession(session);
 
-                var mdOperations = new MutableDataOperations();
+                var mdOperations = new DataOperations();
                 await mdOperations.CreateMutableData();
 
                 await mdOperations.AddEntry(Helpers.GenerateRandomString(10), Helpers.GenerateRandomString(10));
