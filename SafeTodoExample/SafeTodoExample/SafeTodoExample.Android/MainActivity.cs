@@ -5,6 +5,7 @@ using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 using Android.Widget;
+using SafeTodoExample.Helpers;
 using SafeTodoExample.Service;
 using Xamarin.Forms;
 
@@ -17,10 +18,6 @@ namespace SafeTodoExample.Droid
         MainLauncher = true,
         LaunchMode = LaunchMode.SingleTask,
         ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
-    [IntentFilter(
-            new[] { Intent.ActionView },
-            Categories = new[] { Intent.CategoryDefault, Intent.CategoryBrowsable },
-            DataScheme = AppService.AppId)]
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
     {
         private AppService AppService => DependencyService.Get<AppService>();
@@ -40,38 +37,12 @@ namespace SafeTodoExample.Droid
             Forms.Init(this, bundle);
             LoadApplication(new App());
 
-            if (Intent?.Data != null)
-            {
-                HandleAppLaunch(Intent.Data.ToString());
-            }
+            // Check for intent data
         }
 
-        protected override void OnNewIntent(Intent intent)
-        {
-            base.OnNewIntent(intent);
-            if (intent?.Data != null)
-            {
-                HandleAppLaunch(intent.Data.ToString());
-            }
-        }
+        // Override OnNewIntent(Intent intent) method
 
-        private void HandleAppLaunch(string url)
-        {
-            System.Diagnostics.Debug.WriteLine($"Launched via: {url}");
-            Device.BeginInvokeOnMainThread(
-              async () =>
-              {
-                  try
-                  {
-                      await AppService.HandleUrlActivationAsync(url);
-                      System.Diagnostics.Debug.WriteLine("IPC Msg Handling Completed");
-                  }
-                  catch (Exception ex)
-                  {
-                      System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}");
-                  }
-              });
-        }
+        // Add HandleAppLanuch(string url) method
 
         public override void OnBackPressed()
         {

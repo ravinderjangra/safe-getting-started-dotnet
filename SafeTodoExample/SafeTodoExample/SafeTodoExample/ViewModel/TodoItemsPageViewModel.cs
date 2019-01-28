@@ -33,8 +33,13 @@ namespace SafeTodoExample.ViewModel
             AddItemCommand = new Command(async () => await OnAddItemCommand());
             LogoutCommand = new Command(async () => await OnLogoutCommandAsync());
             RefreshItemCommand = new Command(async () => await OnRefreshItemsCommand());
-            MarkCompletedCommand = new Command(async (item) => await OnCompleteItemsCommand((TodoItem)item));
+            MarkCompletedCommand = new Command(async item => await OnCompleteItemsCommand((TodoItem)item));
             ToDoItems = new ObservableCollection<TodoItem>();
+            Task.Run(async () =>
+            {
+                await AppService.GetMdInfoAsync();
+                await OnRefreshItemsCommand();
+            });
         }
 
         private async Task OnCompleteItemsCommand(TodoItem item)
@@ -59,7 +64,7 @@ namespace SafeTodoExample.ViewModel
             IsBusy = true;
             try
             {
-                var todoItem = await AppService.GetItemAsync();
+                var todoItem = await AppService.GetItemsAsync();
                 ToDoItems = new ObservableCollection<TodoItem>(todoItem.OrderByDescending(i => i.IsCompleted).Reverse());
             }
             catch (Exception ex)

@@ -51,40 +51,23 @@ namespace SafeTodoExample.ViewModel
             }
         }
 
-        public ICommand MockConnectCommand => new Command(async () => await ConnectToMockAsync());
+        public ICommand ConnectCommand => new Command(async () => await ConnectToNetworkAsync());
 
-        public ICommand LiveConnectCommand => new Command(async () => await ConnectToLiveAsync());
-
-        public async Task ConnectToMockAsync()
+        public async Task ConnectToNetworkAsync()
         {
-            Debug.WriteLine("Initiate Mock Network Connection");
-#if SAFE_APP_MOCK
             try
             {
                 using (Acr.UserDialogs.UserDialogs.Instance.Loading("Authenticating"))
                 {
+#if SAFE_APP_MOCK
+                    // Create mock account and test app
                     await AppService.ProcessMockAuthentication();
-                }
-                MessagingCenter.Send(this, MessengerConstants.NavigateToItemPage);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.Message);
-            }
+                    MessagingCenter.Send(this, MessengerConstants.NavigateToItemPage);
 #else
-            await Application.Current.MainPage.DisplayAlert("Configuration missing", "please add SAFE_APP_MOCK in build compilation symbols", "ok");
+                    // Sending AuthReq to the authenticator
+                    await AppService.ProcessNonMockAuthentication();
 #endif
-        }
-
-        private async Task ConnectToLiveAsync()
-        {
-            Debug.WriteLine("Initiate Live Network Connection");
-
-            try
-            {
-                DialogHelper.ShowToast(AuthInProgressMessage, DialogType.Information);
-                var url = await AppService.GenerateAppRequestAsync();
-                Device.BeginInvokeOnMainThread(() => { Device.OpenUri(new Uri(url)); });
+                }
             }
             catch (Exception ex)
             {

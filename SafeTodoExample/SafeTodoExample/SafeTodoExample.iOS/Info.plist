@@ -37,11 +37,9 @@
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
-			<key>CFBundleURLName</key>
-			<string>SafeTodoExample</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>net.maidsafe.examples.todo</string>
+				<string></string>
 			</array>
 			<key>CFBundleTypeRole</key>
 			<string>None</string>
