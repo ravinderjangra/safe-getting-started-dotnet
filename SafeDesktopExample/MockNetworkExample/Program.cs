@@ -30,7 +30,7 @@ namespace MockNetworkExample
                         // update system registry
                         Helpers.RegisterAppProtocol(args[0]);
 
-                        // Request authentication from mock browser
+                        // Authentication with the SAFE browser
                         await Authentication.AuthenticationWithBrowserAsync();
 
                         // Start named pipe server and listen for message
