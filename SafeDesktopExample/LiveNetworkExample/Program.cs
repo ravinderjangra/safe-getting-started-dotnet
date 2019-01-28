@@ -21,11 +21,11 @@ namespace LiveNetworkExample
             if (IsApplicationFirstInstance())
             {
                 // args[0] is always the path to the application
-                // update system registery
+                // update system registry
                 Helpers.RegisterAppProtocol(args[0]);
 
-                // Request authentication from mock browser
-                await Authentication.NonMockAuthenticationWithBrowserAsync();
+                // Authentication with the SAFE browser
+                await Authentication.AuthenticationWithBrowserAsync();
 
                 // Start named pipe server and listen for message
                 var authResponse = PipeComm.ReceiveNamedPipeServerMessage();

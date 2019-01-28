@@ -27,11 +27,11 @@ namespace MockNetworkExample
                     if (input.Equals("Y") || input.Equals("y"))
                     {
                         // args[0] is always the path to the application
-                        // update system registery
+                        // update system registry
                         Helpers.RegisterAppProtocol(args[0]);
 
-                        // Request authentication from mock browser
-                        await Authentication.MockAuthenticationWithBrowserAsync();
+                        // Authentication with the SAFE browser
+                        await Authentication.AuthenticationWithBrowserAsync();
 
                         // Start named pipe server and listen for message
                         var authResponse = PipeComm.ReceiveNamedPipeServerMessage();
@@ -52,7 +52,7 @@ namespace MockNetworkExample
                         var session = await Authentication.MockAuthenticationAsync();
 
                         // Initialise session for Mutable Data operations
-                        MutableDataOperations.InitialiseSession(session);
+                        DataOperations.InitialiseSession(session);
 
                         // Show user menu
                         UserInput userInput = new UserInput();
